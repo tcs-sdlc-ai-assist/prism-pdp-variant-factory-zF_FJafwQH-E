@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: prism-pdp-variant-factory
+  description: Prism PDP Variant Factory - Product Detail Page variant configuration and management tool
+  annotations:
+    github.com/project-slug: prism-pdp-variant-factory
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - react
+    - vite
+    - javascript
+    - tailwindcss
+  links:
+    - url: https://github.com/prism-pdp-variant-factory
+      title: GitHub Repository
+      icon: github
+spec:
+  type: website
+  lifecycle: production
+  owner: frontend-team
+  system: prism-pdp
