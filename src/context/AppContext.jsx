@@ -20,20 +20,18 @@ import { emitEvent, EVENT_TYPES } from '@/services/observabilityEmitter.js';
  */
 
 /**
- * @typedef {Object} AppActions
- * @property {function(Array<*>): void} setCatalog - Sets the catalog data
- * @property {function(object): void} setCohortSet - Sets and persists the cohort set
+      toggleDiff,
+      resetAll,
+      addToCart,
+      clearCart,
  * @property {function(Array<*>): void} setVariants - Sets the variants array
  * @property {function(Array<*>): void} setManifests - Sets the manifests array
  * @property {function(): void} toggleDiff - Toggles the diff highlight mode
  * @property {function(): Promise<void>} resetAll - Resets all state to defaults
- * @property {function(string|null): void} setError - Sets or clears the error message
- * @property {function(boolean): void} setIsLoading - Sets the loading state
- */
-
-/**
- * @typedef {AppState & AppActions} AppContextValue
- */
+    <AppContext.Provider value={contextValue}>
+      {children}
+    </AppContext.Provider>
+  );
 
 /** @type {React.Context<AppContextValue|null>} */
 const AppContext = createContext(null);
@@ -64,6 +62,7 @@ export function AppProvider({ children }) {
   const [cohortSet, setCohortSetState] = useState(null);
   const [variants, setVariantsState] = useState([]);
   const [manifests, setManifestsState] = useState([]);
+  const [cart, setCartState] = useState([]);
   const [diffToggle, setDiffToggle] = useState(false);
   const [isFallbackMode, setIsFallbackMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,6 +96,11 @@ export function AppProvider({ children }) {
       const manifestsLoad = load(STORAGE_KEYS.MANIFESTS_KEY);
       if (manifestsLoad.data && Array.isArray(manifestsLoad.data)) {
         setManifestsState(manifestsLoad.data);
+      }
+
+      const cartLoad = load(STORAGE_KEYS.CART_KEY);
+      if (cartLoad.data && Array.isArray(cartLoad.data)) {
+        setCartState(cartLoad.data);
       }
 
       emitEvent(EVENT_TYPES.PDP_LOAD, {
@@ -167,6 +171,51 @@ export function AppProvider({ children }) {
     save(STORAGE_KEYS.MANIFESTS_KEY, newManifests);
   }, []);
 
+  const addToCart = useCallback((item) => {
+    if (!item || typeof item !== 'object') {
+      console.error('[AppContext] addToCart: invalid item');
+      return;
+    }
+
+    setCartState((prev) => {
+      const next = [...prev, { ...item, addedAt: Date.now() }];
+      try {
+        save(STORAGE_KEYS.CART_KEY, next);
+      } catch (e) {
+        console.error('[AppContext] Failed to persist cart:', e.message);
+      }
+
+      try {
+        emitEvent(EVENT_TYPES.CART_ACTION, {
+          action: 'add',
+          productId: item.id,
+          sku: item.sku,
+        });
+      } catch (_e) {
+        // best-effort
+      }
+
+      return next;
+    });
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartState([]);
+    try {
+      save(STORAGE_KEYS.CART_KEY, []);
+    } catch (e) {
+      console.error('[AppContext] Failed to persist cart clear:', e.message);
+    }
+
+    try {
+      emitEvent(EVENT_TYPES.CART_ACTION, {
+        action: 'clear',
+      });
+    } catch (_e) {
+      // best-effort
+    }
+  }, []);
+
   const toggleDiff = useCallback(() => {
     setDiffToggle((prev) => !prev);
   }, []);
@@ -215,6 +264,7 @@ export function AppProvider({ children }) {
     () => ({
       catalog,
       cohortSet,
+      cart,
       variants,
       manifests,
       diffToggle,
@@ -225,6 +275,8 @@ export function AppProvider({ children }) {
       setCohortSet,
       setVariants,
       setManifests,
+      addToCart,
+      clearCart,
       toggleDiff,
       resetAll,
       setError,
@@ -233,6 +285,7 @@ export function AppProvider({ children }) {
     [
       catalog,
       cohortSet,
+      cart,
       variants,
       manifests,
       diffToggle,
@@ -245,6 +298,8 @@ export function AppProvider({ children }) {
       setManifests,
       toggleDiff,
       resetAll,
+      addToCart,
+      clearCart,
     ],
   );
 
@@ -258,5 +313,8 @@ export function AppProvider({ children }) {
 AppProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
+
+// Augment exported shape for consumers (documented only)
+AppProvider.displayName = 'AppProvider';
 
 export default AppContext;

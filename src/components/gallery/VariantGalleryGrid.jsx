@@ -318,6 +318,8 @@ function VariantGalleryGrid({
             ref={(el) => setCardRef(index, el)}
             role="gridcell"
             onFocus={() => handleCardFocus(index)}
+            className="animate-fade-in"
+            style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'both' }}
           >
             <VariantCard
               variant={variant}

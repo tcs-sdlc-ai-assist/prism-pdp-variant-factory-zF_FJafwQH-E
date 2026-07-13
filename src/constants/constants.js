@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   COHORT_SET_KEY: 'prism_cohort_sets',
   VARIANTS_KEY: 'prism_variants',
   MANIFESTS_KEY: 'prism_manifests',
+  CART_KEY: 'prism_cart',
 };
 
 export const BRAND_COLORS = {

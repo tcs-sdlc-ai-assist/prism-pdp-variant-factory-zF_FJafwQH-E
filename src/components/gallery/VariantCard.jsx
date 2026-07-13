@@ -181,15 +181,9 @@ function formatCurrency(value) {
  */
 function VariantCard({ variant, canonicalPdp, index = 0, showDiff = true, className }) {
   const navigate = useNavigate();
-  const { diffToggle } = useAppContext();
+  const { diffToggle, addToCart } = useAppContext();
 
   const variantId = variant ? variant.variantId || variant.id || '' : '';
-  const label = variant ? variant.label || variant.name || `Variant ${index + 1}` : `Variant ${index + 1}`;
-  const cohortType = variant ? variant.cohortType || '' : '';
-  const behavioralOverlay = variant ? variant.behavioralOverlay || '' : '';
-  const controlFlag = variant ? variant.controlFlag === true : false;
-  const priority = variant && typeof variant.priority === 'number' ? variant.priority : 0;
-
   const variantPdp = useMemo(() => {
     if (!variant) {
       return null;
@@ -199,6 +193,23 @@ function VariantCard({ variant, canonicalPdp, index = 0, showDiff = true, classN
     }
     return variant;
   }, [variant]);
+
+  const handleAddToCart = useCallback(
+    (event) => {
+      event.stopPropagation();
+      if (!variantPdp || typeof addToCart !== 'function') {
+        return;
+      }
+      addToCart(variantPdp);
+    },
+    [variantPdp, addToCart],
+  );
+
+  const label = variant ? variant.label || variant.name || `Variant ${index + 1}` : `Variant ${index + 1}`;
+  const cohortType = variant ? variant.cohortType || '' : '';
+  const behavioralOverlay = variant ? variant.behavioralOverlay || '' : '';
+  const controlFlag = variant ? variant.controlFlag === true : false;
+  const priority = variant && typeof variant.priority === 'number' ? variant.priority : 0;
 
   const productTitle = variantPdp ? variantPdp.title || '' : '';
   const productPrice = variantPdp && typeof variantPdp.price === 'number' ? variantPdp.price : null;
@@ -340,6 +351,29 @@ function VariantCard({ variant, canonicalPdp, index = 0, showDiff = true, classN
 
       {/* Card body */}
       <div className="flex flex-1 flex-col gap-3 p-4">
+        {/* Diff accent tag — "changed for [cohort]" (PRD §15) */}
+        {showDiff && diffToggle && simpleDiff.hasChanges && (
+          <div className="flex items-center gap-1.5 rounded-md bg-accent-50 border border-accent-200 px-2.5 py-1.5 animate-fade-in">
+            <svg
+              className="h-3.5 w-3.5 flex-shrink-0 text-accent-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456Z" />
+            </svg>
+            <span className="text-xs font-semibold text-accent-700">
+              {simpleDiff.dimensions.length} change{simpleDiff.dimensions.length === 1 ? '' : 's'} from control
+            </span>
+            {cohortType && (
+              <span className="text-xs text-accent-600 truncate">· for {cohortType.replace(/[-_]/g, ' ')}</span>
+            )}
+          </div>
+        )}
+
         {/* Variant label */}
         <div>
           <h3 className="text-sm font-semibold text-neutral-900 leading-snug line-clamp-2 group-hover:text-primary-600 transition-colors duration-200">
@@ -371,25 +405,34 @@ function VariantCard({ variant, canonicalPdp, index = 0, showDiff = true, classN
         </div>
 
         {/* Price + CTA preview */}
-        <div className="flex items-center justify-between gap-2">
-          {productPrice !== null && (
-            <span className="text-sm font-bold text-neutral-900">
-              {formatCurrency(productPrice)}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-2">
+            {productPrice !== null && (
+              <span className="text-sm font-bold text-neutral-900">
+                {formatCurrency(productPrice)}
+              </span>
+            )}
+            <span
+              className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                ctaTone === 'urgent'
+                  ? 'bg-red-50 text-red-700'
+                  : ctaTone === 'value'
+                    ? 'bg-green-50 text-green-700'
+                    : ctaTone === 'premium'
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'bg-neutral-100 text-neutral-600'
+              }`}
+            >
+              {primaryCTA}
             </span>
-          )}
-          <span
-            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
-              ctaTone === 'urgent'
-                ? 'bg-red-50 text-red-700'
-                : ctaTone === 'value'
-                  ? 'bg-green-50 text-green-700'
-                  : ctaTone === 'premium'
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'bg-neutral-100 text-neutral-600'
-            }`}
+          </div>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="inline-flex items-center justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-primary-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
           >
-            {primaryCTA}
-          </span>
+            Add to Cart
+          </button>
         </div>
 
         {/* Tailoring dimensions */}

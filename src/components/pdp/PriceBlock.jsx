@@ -366,23 +366,7 @@ function PriceBlock({
         </div>
       )}
 
-      {/* CTA buttons */}
-      <div
-        className={`mt-5 flex flex-col gap-2 sm:flex-row${getDiffOutlineClass(showDiffOutline, diffHighlights, 'primaryCTA', 'title')}`}
-      >
-        <button
-          type="button"
-          className={`inline-flex flex-1 items-center justify-center rounded-md px-5 py-3 text-sm font-semibold shadow-sm transition-colors duration-200 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${ctaClasses.primary}`}
-        >
-          {primaryCTA}
-        </button>
-        <button
-          type="button"
-          className={`inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-medium shadow-sm ring-1 ring-inset transition-colors duration-200 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 ${ctaClasses.secondary}`}
-        >
-          {secondaryCTA}
-        </button>
-      </div>
+      {/* CTA buttons moved to FulfillmentOptions to avoid duplication */}
 
       {/* Price display mode label for variant awareness */}
       {priceDisplay !== 'standard' && (
@@ -440,8 +424,6 @@ PriceBlock.propTypes = {
   showSavings: PropTypes.bool,
   showMemberPrice: PropTypes.bool,
   priceCallout: PropTypes.string,
-  primaryCTA: PropTypes.string,
-  secondaryCTA: PropTypes.string,
   ctaTone: PropTypes.oneOf(['standard', 'urgent', 'value', 'premium', 'friendly']),
   diffHighlights: PropTypes.shape({
     dimensions: PropTypes.arrayOf(PropTypes.string),
@@ -458,8 +440,6 @@ PriceBlock.defaultProps = {
   showSavings: false,
   showMemberPrice: false,
   priceCallout: '',
-  primaryCTA: 'Add to Cart',
-  secondaryCTA: 'Save for Later',
   ctaTone: 'standard',
   diffHighlights: undefined,
   showDiffOutline: false,

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import ProductHero from '@/components/pdp/ProductHero.jsx';
 import PriceBlock from '@/components/pdp/PriceBlock.jsx';
@@ -6,7 +6,11 @@ import UrgencyBadge from '@/components/pdp/UrgencyBadge.jsx';
 import SpecTable from '@/components/pdp/SpecTable.jsx';
 import ReviewSummary from '@/components/pdp/ReviewSummary.jsx';
 import CrossSell from '@/components/pdp/CrossSell.jsx';
-import CtaButton from '@/components/pdp/CtaButton.jsx';
+import ProductDescription from '@/components/pdp/ProductDescription.jsx';
+import QASection from '@/components/pdp/QASection.jsx';
+import FulfillmentOptions from '@/components/pdp/FulfillmentOptions.jsx';
+import LifecycleModule from '@/components/pdp/LifecycleModule.jsx';
+import ComparisonModule from '@/components/pdp/ComparisonModule.jsx';
 
 /**
  * @typedef {Object} DiffHighlights
@@ -50,7 +54,8 @@ import CtaButton from '@/components/pdp/CtaButton.jsx';
 
 /**
  * Full canonical PDP composition component: assembles ProductHero, PriceBlock,
- * UrgencyBadge, SpecTable, ReviewSummary, CrossSell, and CtaButton into a
+ * UrgencyBadge, SpecTable, ReviewSummary, CrossSell, CtaButton, ProductDescription,
+ * FulfillmentOptions, LifecycleModule, ComparisonModule, and QASection into a
  * complete Best Buy-style product detail page. Accepts product data and optional
  * diff highlights. Responsive layout with Tailwind grid.
  *
@@ -86,8 +91,17 @@ function CanonicalPdp({
   showDiffOutline = false,
   onPrimaryClick,
   onSecondaryClick,
+  cohortType = '',
+  behavioralOverlay = '',
   className,
 }) {
+  // Determine whether comparison module should be visible (Tech Enthusiast / high-intent)
+  const showComparison = useMemo(() => {
+    const ct = (cohortType || '').toLowerCase();
+    const ov = (behavioralOverlay || '').toLowerCase();
+    return ct.includes('tech') || ct.includes('enthusiast') || ct.includes('high') ||
+      ov.includes('comparison') || ov.includes('research') || ov.includes('high');
+  }, [cohortType, behavioralOverlay]);
   if (!product || typeof product !== 'object') {
     return (
       <div
@@ -149,7 +163,7 @@ function CanonicalPdp({
 
       {/* Main Content Grid: Price + Specs side by side on larger screens */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Column: Price Block + CTA */}
+        {/* Left Column: Price Block + CTA + Fulfillment */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           <PriceBlock
             product={product}
@@ -164,13 +178,14 @@ function CanonicalPdp({
             showDiffOutline={showDiffOutline}
           />
 
-          {/* Standalone CTA Buttons */}
-          <CtaButton
+          {/* Fulfillment Options: ship / store pickup / curbside (PRD §10.1) */}
+          <FulfillmentOptions
+            product={product}
+            diffHighlights={diffHighlights}
+            showDiffOutline={showDiffOutline}
             primaryCTA={primaryCTA}
             secondaryCTA={secondaryCTA}
             ctaTone={ctaTone}
-            diffHighlights={diffHighlights}
-            showDiffOutline={showDiffOutline}
             onPrimaryClick={onPrimaryClick}
             onSecondaryClick={onSecondaryClick}
           />
@@ -188,6 +203,31 @@ function CanonicalPdp({
         </div>
       </div>
 
+      {/* Product Overview / Description (AEM-style fragment, PRD Â§10.1) */}
+      <ProductDescription
+        product={product}
+        diffHighlights={diffHighlights}
+        showDiffOutline={showDiffOutline}
+      />
+
+      {/* Lifecycle / Geek Squad Module (conditional: post-purchase/loyalty cohorts, PRD Â§9.9) */}
+      <LifecycleModule
+        cohortType={cohortType}
+        behavioralOverlay={behavioralOverlay}
+        product={product}
+        diffHighlights={diffHighlights}
+        showDiffOutline={showDiffOutline}
+      />
+
+      {/* Comparison Module (Tech Enthusiast / high-intent cohorts, PRD Â§9.4) */}
+      <ComparisonModule
+        product={product}
+        cohortType={cohortType}
+        visible={showComparison}
+        diffHighlights={diffHighlights}
+        showDiffOutline={showDiffOutline}
+      />
+
       {/* Review Summary Section */}
       <ReviewSummary
         product={product}
@@ -197,6 +237,12 @@ function CanonicalPdp({
         reviewFilter={reviewFilter}
         maxHighlightedReviews={maxHighlightedReviews}
         reviewSortBy={reviewSortBy}
+        diffHighlights={diffHighlights}
+        showDiffOutline={showDiffOutline}
+      />
+
+      {/* Q&A Section (PRD Â§10.1) */}
+      <QASection
         diffHighlights={diffHighlights}
         showDiffOutline={showDiffOutline}
       />
@@ -299,6 +345,8 @@ CanonicalPdp.propTypes = {
   showDiffOutline: PropTypes.bool,
   onPrimaryClick: PropTypes.func,
   onSecondaryClick: PropTypes.func,
+  cohortType: PropTypes.string,
+  behavioralOverlay: PropTypes.string,
   className: PropTypes.string,
 };
 
@@ -331,6 +379,8 @@ CanonicalPdp.defaultProps = {
   showDiffOutline: false,
   onPrimaryClick: undefined,
   onSecondaryClick: undefined,
+  cohortType: '',
+  behavioralOverlay: '',
   className: undefined,
 };
 

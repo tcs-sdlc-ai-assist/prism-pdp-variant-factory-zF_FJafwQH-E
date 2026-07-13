@@ -365,10 +365,12 @@ function VariantDetailLayout({ variant: variantProp, canonicalPdp: canonicalPdpP
             showTag={isDiffEnabled}
             tagPosition="top-right"
           >
-            <CanonicalPdp
+          <CanonicalPdp
               product={productData}
               diffHighlights={diffHighlights}
               showDiffOutline={showDiffOutline}
+              cohortType={resolvedVariant.cohortType || ''}
+              behavioralOverlay={resolvedVariant.behavioralOverlay || ''}
               {...pdpProps}
             />
           </DiffHighlight>

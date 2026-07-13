@@ -118,7 +118,7 @@ Breadcrumbs.defaultProps = {
  */
 function PdpPage() {
   const { sku, productId } = useParams();
-  const { catalog, isLoading } = useAppContext();
+  const { catalog, isLoading, addToCart } = useAppContext();
 
   const product = useMemo(() => {
     if (!Array.isArray(catalog) || catalog.length === 0) {
@@ -344,7 +344,7 @@ function PdpPage() {
       </div>
 
       {/* Full Canonical PDP */}
-      <CanonicalPdp product={product} />
+      <CanonicalPdp product={product} onPrimaryClick={() => addToCart(product)} />
 
       {/* Footer */}
       <div className="flex items-center gap-2 border-t border-neutral-200 pt-4">

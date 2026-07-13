@@ -3,6 +3,79 @@ import { Link, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useAccessibility } from '@/hooks/useAccessibility.js';
 import { ROUTE_PATHS } from '@/constants/constants.js';
+import { useAppContext } from '@/context/AppContext.jsx';
+
+function CartMenu() {
+  const { cart, clearCart } = useAppContext();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleDocClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener('click', handleDocClick);
+    }
+    return () => document.removeEventListener('click', handleDocClick);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        aria-haspopup="true"
+        aria-expanded={open}
+        onClick={() => setOpen((s) => !s)}
+        className="inline-flex items-center gap-2 rounded-md bg-primary-600/0 px-3 py-2 text-sm font-medium text-primary-100 hover:bg-primary-600/20 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors duration-200"
+      >
+        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8.2A1 1 0 006.4 23h11.2a1 1 0 00.99-.78L20 13M7 13h10" />
+        </svg>
+        {cart && cart.length > 0 && (
+          <span className="inline-flex items-center justify-center rounded-full bg-white text-primary-700 px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ring-primary-200">{cart.length}</span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 z-50 mt-2 w-72 rounded-md bg-white p-3 text-neutral-900 shadow-lg">
+          <h4 className="mb-2 text-sm font-semibold">Cart ({cart ? cart.length : 0})</h4>
+          {(!cart || cart.length === 0) ? (
+            <p className="text-sm text-neutral-500">No items in cart.</p>
+          ) : (
+            <>
+              <ul className="max-h-48 space-y-2 overflow-auto">
+                {cart.map((it, idx) => (
+                  <li key={`${it.id || it.sku || idx}-${idx}`} className="flex items-start gap-2">
+                    <div className="flex-1 text-sm">
+                      <div className="font-medium">{it.title || it.sku || 'Untitled product'}</div>
+                      {it.sku && <div className="text-xs text-neutral-500">{it.sku}</div>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-3 border-t border-neutral-100 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearCart();
+                    setOpen(false);
+                  }}
+                  className="w-full rounded-md bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200"
+                >
+                  Clear cart
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * @typedef {Object} NavLink
@@ -177,51 +250,56 @@ function Header({ className }) {
             })}
           </nav>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden">
-            <button
-              ref={hamburgerButtonRef}
-              type="button"
-              onClick={toggleMobileMenu}
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-navigation-menu"
-              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              className="inline-flex items-center justify-center rounded-md p-2 text-primary-100 hover:bg-primary-600 hover:text-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors duration-200"
-            >
-              {isMobileMenuOpen ? (
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18 18 6M6 6l12 12"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
-              )}
-            </button>
+          {/* Cart + Mobile Hamburger */}
+          <div className="flex items-center gap-3">
+            {/* Cart button with dropdown */}
+            <CartMenu />
+
+            <div className="md:hidden">
+              <button
+                ref={hamburgerButtonRef}
+                type="button"
+                onClick={toggleMobileMenu}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-navigation-menu"
+                aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                className="inline-flex items-center justify-center rounded-md p-2 text-primary-100 hover:bg-primary-600 hover:text-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors duration-200"
+              >
+                {isMobileMenuOpen ? (
+                  <svg
+                    className="h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18 18 6M6 6l12 12"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

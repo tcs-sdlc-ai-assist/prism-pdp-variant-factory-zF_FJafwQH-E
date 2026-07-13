@@ -251,7 +251,37 @@ function ProductHero({
               {urgencyMessage}
             </div>
           )}
+
+          {/* AR / 360° Media Thumbnails (PRD §10.1) */}
+          {(isMediaRich || product.has360 || product.hasAR) && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-neutral-50 border-t border-neutral-100">
+              {/* 360° placeholder */}
+              <button
+                type="button"
+                aria-label="View 360° product tour"
+                className="group flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition-all duration-200 hover:border-primary-400 hover:text-primary-600 hover:shadow focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              >
+                <svg className="h-4 w-4 text-neutral-400 group-hover:text-primary-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+                360°
+              </button>
+              {/* AR placeholder */}
+              <button
+                type="button"
+                aria-label="View product in Augmented Reality"
+                className="group flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 shadow-sm transition-all duration-200 hover:border-accent-400 hover:text-accent-700 hover:shadow focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500"
+              >
+                <svg className="h-4 w-4 text-neutral-400 group-hover:text-accent-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                </svg>
+                View in AR
+              </button>
+              <span className="ml-auto text-xs text-neutral-400 italic">Interactive media</span>
+            </div>
+          )}
         </div>
+
 
         {/* Info Section */}
         <div className={`${infoColClass} flex flex-col justify-center p-6 md:p-8`}>
